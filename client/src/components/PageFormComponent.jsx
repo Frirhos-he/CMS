@@ -12,19 +12,21 @@ function PageForm(props) {
 
   const [title, setTitle] = useState('');
   const [authorID, setAuthorID] = useState(userLogged.id);
+  const [creationDate, setCreationDate] = useState(dayjs()); 
   const [publicationDate, setPublicationDate] = useState('');
   const [contents, setContents] = useState([]);
-  const [editContent, setEditContent] = useState(false);
+  const [observeContentForm, setObserveContentForm] = useState(false);
+  const [editContent, setEditContent] = useState({});
   const [editPage, setEditPage] = useState(false);
   const [lastPosition, setLastPosition] = useState(0);
   const [loading, setLoading] = useState(false);
-  console.log(userLogged.id +"Here")
+  
   useEffect(() => {
     const getPage = async () => {
       try {
         setLoading(true);
         const page = await API.getPageByIdAndContents(pageid);
-        console.log(page)
+        setCreationDate(page.creationDate);
         setPublicationDate(page.publicationDate);
         setContents(page.contents);
         setAuthorID(page.authorid);
@@ -50,7 +52,6 @@ function PageForm(props) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const creationDate = dayjs();
     const formattedPublicationDate = publicationDate ? dayjs(publicationDate) : publicationDate;
 
     const page = {
@@ -103,7 +104,6 @@ function PageForm(props) {
       }
       return content;
     });
-    console.log(updatedContents)
     setContents(updatedContents);
   };
 
@@ -142,10 +142,23 @@ function PageForm(props) {
   };
 
   const setNewContent = (contentObject) => {
-    const newArrayContents = [...contents, contentObject];
-    setContents(newArrayContents);
+    
+    const newContents = [...contents, contentObject];
+    setContents(newContents);
     setLastPosition((lastPosition) => lastPosition + 1);
   };
+
+  const updateContent = (contentObject) => {
+    const updatedContents = [...contents].map(content => {
+      if (content.id === contentObject.id) {
+        return contentObject; // Replace element with specific ID
+      }
+      return content; // Keep other elements unchanged
+    });
+    setContents(updatedContents);
+    setEditContent({});
+  }
+
 
   return (
     <>
@@ -224,20 +237,26 @@ function PageForm(props) {
                   handleDeleteContent={handleDeleteContent}
                   handleArrowDown={handleArrowDown}
                   handleArrowUp={handleArrowUp}
+                  observeContentForm={observeContentForm}
+                  setObserveContentForm={setObserveContentForm}
+                  setEditContent={setEditContent}
                 />
-                      {editContent ? (
+                      {observeContentForm ? (
                         <ContentForm
                           images={images}
-                          setEditContent={setEditContent}
+                          setObserveContentForm={setObserveContentForm}
                           setNewContent={setNewContent}
                           lastId={contents.length ? Math.max(...contents.map((con) => con.id)) : 0}
                           lastPosition={lastPosition}
+                          editContent={editContent}
+                          updateContent={updateContent}
+                          
                         />
                       ) : (
                         <Button
                           className="btn btn-success"
                           onClick={() => {
-                            setEditContent(true);
+                            setObserveContentForm(true);
                           }}
                         >
                           <i className="bi bi-plus-circle-fill"></i>
@@ -254,6 +273,9 @@ function ContentTable(props) {
   const handleDeleteContent = props.handleDeleteContent;
   const handleArrowDown = props.handleArrowDown;
   const handleArrowUp = props.handleArrowUp;
+  const observeContentForm = props.observeContentForm;
+  const setObserveContentForm = props.setObserveContentForm;
+  const setEditContent= props.setEditContent;
 
   return (
     <Table striped>
@@ -274,6 +296,9 @@ function ContentTable(props) {
               handleDeleteContent={handleDeleteContent}
               handleArrowDown={handleArrowDown}
               handleArrowUp={handleArrowUp}
+              observeContentForm={observeContentForm}
+              setObserveContentForm={setObserveContentForm}
+              setEditContent={setEditContent}
             />
           ))}
       </tbody>
@@ -286,6 +311,9 @@ function ContentRow(props) {
   const handleDeleteContent = props.handleDeleteContent;
   const handleArrowDown = props.handleArrowDown;
   const handleArrowUp = props.handleArrowUp;
+  const observeContentForm = props.observeContentForm;
+  const setObserveContentForm = props.setObserveContentForm;
+  const setEditContent = props.setEditContent;
 
   return (
     <tr>
@@ -303,6 +331,11 @@ function ContentRow(props) {
         <Button size="sm" onClick={() => handleArrowDown(contentRow.id)}>
           <i className="bi bi-arrow-down" />
         </Button>
+        &nbsp;
+        <Button size="sm"onClick={() => {setObserveContentForm(true);setEditContent(contentRow);}} disabled={observeContentForm}>
+              <i className="bi bi-pencil-square"></i>
+        </Button>
+        &nbsp;
       </td>
     </tr>
   );

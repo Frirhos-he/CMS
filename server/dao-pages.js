@@ -4,7 +4,6 @@
 
 const db = require('./db');
 const contentDao = require('./dao-contents'); // module for accessing the pages table in the DB
-
 /*
  * API: pages
  */
@@ -32,6 +31,7 @@ exports.getPages = () => {
     });
   });
 };
+
 
 // This function retrieves pages and the associated userid
 exports.getPagesByUserId = (userid) => {
@@ -146,19 +146,51 @@ exports.updatePage = (pageid, page) => {
         resolve({ error: 'No page was updated.' });
         return;
       }
-      contentDao.deleteContentsByPageId(pageid)  // before inserting the contents I need to remove the previosly inserted
-        .then(() => {
-          const createContentPromises = page.contents.map((content) => {
-            return contentDao.createContent(content, pageid);
-          });
-          return Promise.all(createContentPromises);
-        })
-        .then(() => {
-          resolve(exports.getPageByIdAndContents(pageid));  //return the corrected page
-        })
-        .catch((error) => {
-          reject(error);
-        });
+      contentDao.getContentsByPageId(pageid)
+            .then((oldContents) => {
+
+              const oldContentsCopy =[...oldContents];
+
+
+              if (oldContentsCopy.length === 0) {
+                resolve({ error: "Page has no contents" });
+              } else {
+                const newContents = page.contents;
+
+                // Compare old and new contents
+                const createPromises = [];
+                const updatePromises = [];
+                const deletePromises = [];
+
+                // Check for new contents and update existing ones
+                newContents.forEach((newContent) => {
+                  const foundIndex = oldContentsCopy.findIndex((oldContent) => oldContent.id === newContent.id);
+
+                  if (foundIndex === -1) {
+                    // New content, create it
+                    createPromises.push(contentDao.createContent(newContent, pageid));
+                  } else {
+                    // Existing content, update it
+                    updatePromises.push(contentDao.updateContent(newContent));
+                    // Remove the updated content from the oldContentsCopy array
+                    oldContentsCopy.splice(foundIndex, 1);
+                  }
+                });
+
+                // Delete remaining old contents
+                oldContentsCopy.forEach((oldContent) => {
+                  deletePromises.push(contentDao.deleteContent(oldContent.id));
+                });
+                // Perform the necessary operations
+                return Promise.all([...createPromises, ...updatePromises, ...deletePromises]);
+              }
+            })
+            .then(() => {
+              resolve(exports.getPageByIdAndContents(pageid));  // Return the corrected page
+            })
+            .catch((error) => {
+              reject(error);
+            });
     });
   });
 };

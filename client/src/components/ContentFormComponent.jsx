@@ -1,32 +1,46 @@
 import { useState } from 'react';
 import { Form, Button, Row, Col, } from 'react-bootstrap';
-
+import { useParams } from 'react-router-dom';
 
 function ContentForm(props) {
-  const [contentType, setContentType] = useState('header');
-  const [text, setText] = useState('');
-
+  const pageid = props.pageid
   const images = props.images;
   const lastId = props.lastId;
   const lastPosition = props.lastPosition;
+  const editContent = props.editContent;
+
+  const [contentType, setContentType] = useState(Object.keys(editContent).length !== 0 ? editContent.type : 'header');
+  const [text, setText] = useState(Object.keys(editContent).length !== 0 ? editContent.text : '');
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const newPosition = lastPosition +1; 
-    const newId = lastId+1;
 
-    const contentObject = {
-      id:   newId,
-      type: contentType,
-      text: text,
-      position: newPosition
-    };
-    // Call the parent form's callback function with the contentObject
-    props.setNewContent(contentObject);
-    props.setEditContent(false);
+
+    if (Object.keys(editContent).length !== 0) { //update
+      const updatedContent = { ...editContent };
+      updatedContent.text = text;
+      props.updateContent(updatedContent);
+      
+    }else { //new element
+      const newPosition = lastPosition +1; 
+      const newId = lastId+1;
+      const contentObject = {
+        id:   newId,
+        pageid: pageid,
+        type: contentType,
+        text: text,
+        position: newPosition
+      };
+      // Call the parent form's callback function with the contentObject
+      props.setNewContent(contentObject);
+
+    }
+
     // Reset the form fields
     setContentType('header');
     setText('');
+    props.setObserveContentForm(false);
+
   };
 
   return (
@@ -35,7 +49,7 @@ function ContentForm(props) {
         <Col>
       <Form.Group className='mb-3'>
         <Form.Label>Content Type</Form.Label>
-        <Form.Control as='select' required value={contentType} onChange={(event) => setContentType(event.target.value)}>
+        <Form.Control as='select' required value={contentType} onChange={(event) => setContentType(event.target.value)} disabled={Object.keys(editContent).length !== 0}>
           <option value='header'>Header</option>
           <option value='paragraph'>Paragraph</option>
           <option value='image'>Image</option>

@@ -1,3 +1,4 @@
+'use strict'
 /*** Importing modules ***/
 const express = require('express'); // The core Express module that allows you to create a simple and extensible web server web framework
 const morgan = require('morgan');   //  A logging middleware that logs HTTP requests to the console. 
@@ -232,7 +233,6 @@ app.put(
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
-    console.log("publicationdate"+req.body.creationDate + "adad");
     // body id == req id
     if (req.body.id != Number(req.params.id)) {
       return res.status(422).json({ error: 'URL and body id mismatch' });
@@ -247,6 +247,7 @@ app.put(
     // check if the publication date is after the creation date
     const creationDate = dayjs(req.body.creationDate);
     const publicationDate = dayjs(req.body.publicationDate);
+
     if (publicationDate !== '' && creationDate.isAfter(publicationDate)) {
       return res.status(422).json({ error: 'creation date cannot be greater than the publication date' });
     }

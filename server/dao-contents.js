@@ -39,6 +39,31 @@ exports.createContent = (content, pageid) => {
   });
 };
 
+exports.updateContent = (content) => {
+  return new Promise((resolve, reject) => {
+    const sql = 'UPDATE contents SET text = ?, position = ? WHERE id = ?';
+
+    db.run(sql, [content.text,content.position, content.id], function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(); // Return nothing in case of success
+      }
+    });
+  });
+};
+exports.deleteContent = (contentid) => {
+  return new Promise((resolve, reject) => {
+    const sql = 'DELETE FROM contents WHERE id = ?';
+    db.run(sql, [contentid], function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();  //return nothing in case of success
+      }
+    });
+  });
+};
   
 // This function remove all the contents associated with a specific pageid
 exports.deleteContentsByPageId = (pageid) => {

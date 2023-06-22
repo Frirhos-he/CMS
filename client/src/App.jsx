@@ -55,6 +55,9 @@ function App() {
     
       checkAuth();
       },[]);
+      
+
+
       const getPages = async () => {
         try {
           setDirtyPages(true);
@@ -68,6 +71,7 @@ function App() {
         } catch (error) {
           handleErrors(error);
           setDirtyPages(false);
+          setLoggedin(false);
         }
       };
   useEffect(() => {
@@ -116,6 +120,7 @@ function App() {
       handleErrors(err);
       setLoggedin(false);
       setUserLogged({});
+      setLoggedin(false);
       setUsers([]);
       setMessage({msg: "Wrong username/ password", type: 'danger'});
       return false;
@@ -129,7 +134,6 @@ function App() {
     setMessage({ msg: `Successfully loggedout`, type: 'success' })
     } catch (err) {
       handleErrors(err);
-      setLoggedin(false);
       setUserLogged({});
       setUsers([]);
     }
@@ -140,6 +144,7 @@ function App() {
     await API.deletePage(pageid);
     await getPages();
     } catch (err) {
+      setLoggedin(false);
       handleErrors(err);
     }
   };
@@ -149,6 +154,7 @@ function App() {
     await API.addPage(page);
     await getPages();
     } catch (err) {
+      setLoggedin(false);
       handleErrors(err);
     }
   };
@@ -158,6 +164,7 @@ function App() {
     await API.updatePage(pageid, page);
     await getPages();
     } catch (err) {
+      setLoggedin(false);
       handleErrors(err);
     }
   };
@@ -167,6 +174,7 @@ function App() {
       setTitle(titleUpdate)
       setMessage({ msg: `Title successfully changed`, type: 'success' });
     } catch (err) {
+      setLoggedin(false);
       handleErrors(err);
     }
   };
