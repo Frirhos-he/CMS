@@ -40,3 +40,25 @@
 .read-the-docs {
   color: #888;
 }
+
+
+/* Column in PageEditComponent */
+.border-column {
+  border: 1px solid #000; /* Customize the border style as needed */
+}
+
+
+/*Position button */
+.fixed-right-bottom {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+}
+.relative-right-bottom {
+  position: relative;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+
+}

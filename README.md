@@ -1,10 +1,10 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/8AapHqUJ)
-# Exam #N: "Exam Title"
-## Student: s123456 LASTNAME FIRSTNAME 
+# Exam #1: "CMSmall"
+## Student: s309164 PALERMO BRUNO 
 
 ## React Client Application Routes
 
-- Route `/`: page content and purpose
+- Route `/`: default route redirecting to front-office
 - Route `/something/:param`: page content and purpose, param specification
 - ...
 
@@ -24,7 +24,8 @@
 ## Database Tables
 
 - Table `users` - contains xx yy zz
-- Table `something` - contains ww qq ss
+- Table `pages` - contains id title author creationDate publicationDate authorId
+- Table `users` - contains id name role email HASHEDPassword Salt
 - ...
 
 ## Main React Components
