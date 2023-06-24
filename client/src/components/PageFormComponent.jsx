@@ -94,7 +94,6 @@ function PageForm(props) {
         position: position > positionToFix ? position - 1 : position,
       };
     });
-    console.log(updatedContents)
     setContents(updatedContents);
   };
 
