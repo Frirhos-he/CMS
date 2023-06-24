@@ -16,11 +16,8 @@ exports.getImages = () => {
       if (err) {
         reject(err);
       }
-      if (rows == undefined) {
-        resolve({error:"Images not found"});
-      } else {
-      resolve(rows);
-    }
+     resolve(rows);
+
     });
   });
 };

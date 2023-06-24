@@ -4,15 +4,20 @@ import { Container, Image, Row, Col, Button, Spinner } from 'react-bootstrap';
 import API from '../API';
 
 function Page(props) {
+  const handleErrors = props.handleErrors;
   const { pageid } = useParams();
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const getPage = async (pid) => {
+    try{
     setLoading(true)
-    const page = await API.getPageByIdAndContents(pid);
+    const page = await API.getPageById(pid);
     setContents(page.contents);
     setLoading(false)
+    }catch(err){
+      handleErrors(err);
+    }
   };
 
   useEffect(() => {

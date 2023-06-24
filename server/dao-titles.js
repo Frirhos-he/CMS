@@ -15,8 +15,6 @@ exports.getTitle = () => {
     db.get(sql, (err, row) => {
       if (err) {
         reject(err);
-      } else if (row === undefined) {
-        resolve({ error: "No title found." });
       } else {
         resolve(row);
       }

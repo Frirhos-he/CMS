@@ -23,7 +23,7 @@ function ContentForm(props) {
       
     }else { //new element
       const newPosition = lastPosition +1; 
-      const newId = lastId+1;
+      const newId = lastId+1;   // it won't be used for the db just for frontend and handlingArrow
       const contentObject = {
         id:   newId,
         pageid: pageid,
@@ -44,7 +44,7 @@ function ContentForm(props) {
   };
 
   return (
-    <Form onSubmit={handleSubmit} validated>
+    <Form onSubmit={handleSubmit}>
        <Row>
         <Col>
       <Form.Group className='mb-3'>

@@ -103,17 +103,48 @@ const logout = async () => {
 
 const getPages = async () => {
   try {
-    const response = await fetch(SERVER_URL + '/pages');
+    const response = await fetch(SERVER_URL + '/pages',{
+        credentials: 'include'
+      });
 
     if (response.ok) {
       const pagesJson = await response.json();
-
       return pagesJson.map((p) => {
         const clientPage = {
           id: p.id,
           title: p.title,
-          authorid: p.uid,
-          author: p.username,
+          authorid: p.authorid,
+          author: p.author,
+          creationDate: p.creationDate,
+          publicationDate: p.publicationDate,
+        };
+        return clientPage;
+      });
+    } else {
+      const errMessage = await response.json();
+      throw errMessage;
+    }
+  } catch (error) {
+    if (error.hasOwnProperty('error')) {
+      throw error;
+    } else {
+      throw { error: "Cannot parse server response" }
+    }
+  }
+};
+
+const getPublicatedPages = async () => {
+  try {
+    const response = await fetch(SERVER_URL + '/pages/publicated');
+
+    if (response.ok) {
+      const pagesJson = await response.json();
+      return pagesJson.map((p) => {
+        const clientPage = {
+          id: p.id,
+          title: p.title,
+          authorid: p.authorid,
+          author: p.author,
           creationDate: p.creationDate,
           publicationDate: p.publicationDate,
         };
@@ -133,8 +164,14 @@ const getPages = async () => {
 };
 
 
-const getPageByIdAndContents = async (id) => {
+const getPageById = async (id) => {
   try{
+    if (id === null) {
+        throw { error: "id is not a number"}
+    }  
+    if (!Number.isInteger(Number(id)) || Number(id) < 1) {
+      throw { error: 'id must be well formatted' };
+    } 
     const response = await fetch(SERVER_URL + `/pages/${id}`);
 
     if (response.ok) {
@@ -161,7 +198,48 @@ const getPageByIdAndContents = async (id) => {
 
 const updatePage = async (pageid, page) => {
   try {
+    if (pageid === null) {
+      throw {error: "id is not a number"}
+    }
+    if (!page || typeof page !== 'object') {
+      throw {error: "page is undefined"}
+    }  
+    if (
+      !page.hasOwnProperty('title') ||
+      !page.hasOwnProperty('authorid') ||
+      !page.hasOwnProperty('creationDate') ||
+      !page.hasOwnProperty('publicationDate') ||
+      !page.hasOwnProperty('contents')
+    ) {
+      throw {error: "page has not all the properties"}
+    }
+
+    if (!Number.isInteger(Number(pageid)) || Number(pageid) < 1) {
+      throw { error: 'id must be well formatted' };
+    }
+    if (page.title.length < 2 || page.title.length > 160) {
+      throw { error: 'Title length must be between 2 and 160 characters' };
+    }
+
+    if (!Number.isInteger(Number(page.authorid)) || Number(page.authorid) < 0) {
+      throw { error: 'Author ID must be a non-negative integer' };
+    }
     
+    if (!dayjs(page.creationDate).isValid()) {
+      throw { error: 'Invalid creation date format' };
+    }
+
+    if (
+      page.publicationDate !== '' && (!page.publicationDate.isValid() || page.publicationDate.format('YYYY-MM-DD').length != 10 )
+    ) {
+      throw { error: 'Invalid publication date format' };
+    }
+    
+    if (!Array.isArray(page.contents) || page.contents.length < 2) {
+      throw { error: 'Contents must be an array with a minimum length of 2' };
+    }
+    
+
   const response = await fetch(SERVER_URL + '/pages/' + pageid, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -193,6 +271,42 @@ const updatePage = async (pageid, page) => {
 
 const addPage = async (page) => {
   try {
+    
+    if (!page || typeof page !== 'object') {
+      throw {error: "page is undefined"}
+    }  
+    if (
+      !page.hasOwnProperty('title') ||
+      !page.hasOwnProperty('authorid') ||
+      !page.hasOwnProperty('creationDate') ||
+      !page.hasOwnProperty('publicationDate') ||
+      !page.hasOwnProperty('contents')
+    ) {
+      throw {error: "page has not all the properties"}
+    }
+
+    if (page.title.length < 2 || page.title.length > 160) {
+      throw { error: 'Title length must be between 2 and 160 characters' };
+    }
+    
+    if (parseInt(page.authorid) < 0) {
+      throw { error: 'Author ID must be a non-negative integer' };
+    }
+    
+    if (!page.creationDate.isValid()) {
+      throw { error: 'Invalid creation date format' };
+    }
+
+    if (
+      page.publicationDate !== '' && (!page.publicationDate.isValid() || page.publicationDate.format('YYYY-MM-DD').length != 10 )
+   ) {
+     throw { error: 'Invalid publication date format' };
+   }
+    
+    if (!Array.isArray(page.contents) || page.contents.length < 2) {
+      throw { error: 'Contents must be an array with a minimum length of 2' };
+    }
+
   const response = await fetch(SERVER_URL + '/pages/add', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -201,11 +315,10 @@ const addPage = async (page) => {
       title: page.title,
       authorid: page.authorid,
       creationDate: dayjs(page.creationDate).format('YYYY-MM-DD'),
-      publicationDate: page.publicationDate.trim() !== '' ? dayjs(page.publicationDate).format('YYYY-MM-DD') : '',
+      publicationDate: page.publicationDate !== '' ? dayjs(page.publicationDate).format('YYYY-MM-DD') : '',
       contents: page.contents,
     }),
   });
-
   if (!response.ok) {
     const errMessage = await response.json();
     throw errMessage;
@@ -225,11 +338,13 @@ const addPage = async (page) => {
 
 const deletePage = async (pageid) => {
   try{
+    if (pageid === null || typeof pageid !== 'number' || pageid < 1) {
+      throw {error: "id is not a number or invalid"}
+    }
   const response = await fetch(SERVER_URL + `/pages/${pageid}`, {
     method: 'DELETE',
     credentials: 'include',
   });
-
   if (!response.ok) {
     const errMessage = await response.json();
     throw errMessage;
@@ -292,6 +407,8 @@ const getTitle = async () => {
 
 const updateTitle = async (title) => {
   try {
+    if (!title || typeof title !== 'string' || title.length < 2 || title.length >160)
+      throw {error: "title is not well formatted"} 
 
   const response = await fetch(SERVER_URL + '/titles' , {
     method: 'PUT',
@@ -326,7 +443,8 @@ const API = {
   getUserInfo,
   updatePage,
   getPages,
-  getPageByIdAndContents,
+  getPublicatedPages,
+  getPageById,
   addPage,
   getUsers,
   deletePage,

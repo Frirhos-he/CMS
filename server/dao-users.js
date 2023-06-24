@@ -71,8 +71,6 @@ exports.getUsers = () => {
     db.all(sql, [], (err, rows) => {
       if (err) {
         reject(err);
-      } else if (rows.length === 0) { // If the query executes successfully but no rows are returned
-        resolve(rows);  //return empty array 
       } else {
         const users = rows.map(row => ({
           id: row.id,

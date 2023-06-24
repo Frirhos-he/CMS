@@ -25,7 +25,7 @@ function PageForm(props) {
     const getPage = async () => {
       try {
         setLoading(true);
-        const page = await API.getPageByIdAndContents(pageid);
+        const page = await API.getPageById(pageid);
         setCreationDate(page.creationDate);
         setPublicationDate(page.publicationDate);
         setContents(page.contents);
@@ -50,31 +50,38 @@ function PageForm(props) {
     }
   }, [pageid]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    let result = false;
     const formattedPublicationDate = publicationDate ? dayjs(publicationDate) : publicationDate;
-
+  
     const page = {
-      title:title,
+      title: title,
       authorid: authorID,
-      creationDate:creationDate,
+      creationDate: creationDate,
       publicationDate: formattedPublicationDate,
-      contents : contents,
+      contents: contents,
     };
-
-    if (!editPage) {
-      addPage(page);
-    } else {
-      updatePage(pageid, page);
+  
+    try {
+      if (!editPage) {
+        result = await addPage(page);
+      } else {
+        result = await updatePage(pageid, page);
+      }
+      if (result) {
+        navigate('/');
+        setEditPage(false);
+        setPublicationDate("");
+        setContents([]);
+        setAuthorID("");
+        setTitle("");
+      }
+    } catch (error) {
+      handleErrors(error);
     }
-
-    navigate('/');
-    setEditPage(false);
-    setPublicationDate("");
-    setContents([]);
-    setAuthorID("");
-    setTitle("");
   };
+  
 
   const handleDeleteContent = (id) => {
     const elementToDelete = contents.find((content) => content.id === id);
@@ -168,7 +175,7 @@ function PageForm(props) {
             Loading...
     </Button> :
             <>
-                <Form onSubmit={handleSubmit} validated>
+                <Form onSubmit={handleSubmit} >
                   <Row>
                     <Col xs={6}>
                       <Form.Group className="mb-3">
@@ -246,7 +253,7 @@ function PageForm(props) {
                           images={images}
                           setObserveContentForm={setObserveContentForm}
                           setNewContent={setNewContent}
-                          lastId={contents.length ? Math.max(...contents.map((con) => con.id)) : 0}
+                          lastId={contents.length ? Math.max(...contents.map((con) => con.id)) : 0} // it won't be used for the db just for frontend and handlingArrow
                           lastPosition={lastPosition}
                           editContent={editContent}
                           updateContent={updateContent}

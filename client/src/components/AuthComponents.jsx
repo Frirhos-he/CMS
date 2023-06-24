@@ -12,16 +12,15 @@ function LoginForm(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     const credentials = { username, password };
-    props
-      .login(credentials)
+    props.login(credentials)
       .then((res) => {
         if(res)
-          navigate('/pages')})
+          navigate("/pages")}).catch(err => props.handleErrors(err) )
   };
 
   return (
     <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: '50vh' }} fluid>
-      <Form validated onSubmit={handleSubmit} className="border rounded" style={{ maxHeight: '100vh', minWidth: '100vh' }}>
+      <Form onSubmit={handleSubmit} className="border rounded" style={{ maxHeight: '100vh', minWidth: '100vh' }}>
         <Row className="mt-5">
           <Col xs={{ offset: 4, span: 4 }}>
             <Form.Group controlId="username">

@@ -69,17 +69,24 @@ function PageRow(props) {
   );
 }
 
-const sortByPublicationDate = (a, b) => {
-  if (a.publicationDate === '' && b.publicationDate === '') {
-    return 0;
+const sortByPublicationDate = (pageA, pageB) => {
+  const dateA = dayjs(pageA.publicationDate);
+  const dateB = dayjs(pageB.publicationDate);
+
+  // Handle the case where publicationDate is an empty string
+  if (dateA.isValid() && !dateB.isValid()) {
+    return -1;
+  } else if (!dateA.isValid() && dateB.isValid()) {
+    return 1;
   }
-  if (a.publicationDate === '') {
-    return 1; // `a` has a null publication date, so it should come after `b`
+
+  if (dateA.isBefore(dateB)) {
+    return -1;
+  } else if (dateA.isAfter(dateB)) {
+    return 1;
   }
-  if (b.publicationDate === '') {
-    return -1; // `b` has a null publication date, so it should come after `a`
-  }
-  return a.publicationDate - b.publicationDate;
+
+  return 0;
 };
 
 const getPageStatus = (publicationDate) => {

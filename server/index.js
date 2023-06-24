@@ -75,14 +75,12 @@ const isLoggedIn = (req, res, next) => {
 
 app.get('/api/users', isLoggedIn, async (req, res) => {
   try {
-    const result = await userDao.getUsers();
-    if (result.error) {
-      res.status(404).json(result);
-    } else {
+    if(!req.hasOwnProperty('user') || req.user.role != "admin")
+      return res.status(401).json({error: "user is not admin, cannot get users"})
+      const result = await userDao.getUsers();
       res.json(result);
-    }
   } catch (err) {
-    res.status(503).json(err).end();
+    res.status(500).json(err).end();
   }
 });
 
@@ -131,18 +129,31 @@ app.delete('/api/sessions/current', (req, res) => {
 // 1. Retrieve the list of all the available pages.
 // GET /api/pages
 // This route returns the Pages.
-app.get('/api/pages', async (req, res) => {
+app.get('/api/pages', isLoggedIn // Apply the isLoggedIn middleware
+, async (req, res) => {
   try {
+
     const result = await pageDao.getPages();
-    if(result.error)
-        res.status(404).json(result); // no pages found
-      res.json(result);
+    res.json(result);
+
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+// 2. Retrieve the list of all the available publicated pages.
+// GET /api/pages/publicated
+// This route returns the Pages.
+app.get('/api/pages/publicated', async (req, res) => {
+  try {
+    const result = await pageDao.getPublicatedPages();
+    res.json(result);
+
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-// 2. Retrieve a page, given its “id”.
+// 3. Retrieve a page, given its “id”.
 // GET /api/pages/<id>
 // Given a page id, this route returns the associated page and contents.
 app.get('/api/pages/:id', [check('id').isInt({ min: 1 })], async (req, res) => {
@@ -151,7 +162,7 @@ app.get('/api/pages/:id', [check('id').isInt({ min: 1 })], async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
-    const result = await pageDao.getPageByIdAndContents(req.params.id);
+    const result = await pageDao.getPageById(req.params.id);
     if (result.error) {
       res.status(404).json(result);
     } else {
@@ -162,7 +173,7 @@ app.get('/api/pages/:id', [check('id').isInt({ min: 1 })], async (req, res) => {
   }
 });
 
-// 3. Create a new page, by providing all relevant information.
+// 4. Create a new page, by providing all relevant information.
 // POST /api/pages/add
 // This route adds a new page to the page library.
 // add is isLoggedIn
@@ -186,13 +197,14 @@ app.post(
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
+
     const hasHeader = req.body.contents.some(obj => obj.type === 'header');
     const hasImageOrParagraph = req.body.contents.some(obj => obj.type === 'image' || obj.type === 'paragraph');
     if (hasHeader === false || hasImageOrParagraph === false) {
       return res.status(422).json({ error: "didn't provide the minimum number of blocks" });
     }
     const creationDate = dayjs(req.body.creationDate);
-    const publicationDate = dayjs(req.body.publicationDate);
+    const publicationDate = req.body.publicationDate ? dayjs(req.body.publicationDate) : '';
     if (publicationDate !== '' && creationDate.isAfter(publicationDate)) {
       return res.status(422).json({ error: 'creation date cannot be after the publication date' });
     }
@@ -200,8 +212,8 @@ app.post(
     const page = {
       title: req.body.title,
       authorid: req.body.authorid,
-      creationDate: req.body.creationDate, // A different method is required if also time is present. For instance: (req.body.watchDate || '').split('T')[0]
-      publicationDate: req.body.publicationDate, // A different method is required if also time is present. For instance: (req.body.watchDate || '').split('T')[0]
+      creationDate: req.body.creationDate, 
+      publicationDate: req.body.publicationDate,
       contents: req.body.contents
     };
 
@@ -214,7 +226,7 @@ app.post(
   }
 );
 
-// 4. Update an existing page, by providing all the relevant information
+// 5. Update an existing page, by providing all the relevant information
 // PUT /api/pages/<id>
 // This route allows to modify a page, specifying its id and the necessary data.
 app.put(
@@ -237,7 +249,12 @@ app.put(
     if (req.body.id != Number(req.params.id)) {
       return res.status(422).json({ error: 'URL and body id mismatch' });
     }
-
+    const resultPage = await pageDao.getPageById(req.params.id);
+    if(resultPage.error)
+         return res.status(404).json(resultPage);
+    if (!req.hasOwnProperty('user') || (req.user.id != resultPage.authorid && req.user.role != "admin")) {
+      return res.status(401).json({ error: 'User cannot do this operation' });
+    }
     // check if the blocks type match specifications
     const hasHeader = req.body.contents.some(obj => obj.type === 'header');
     const hasImageOrParagraph = req.body.contents.some(obj => obj.type === 'image' || obj.type === 'paragraph');
@@ -246,9 +263,9 @@ app.put(
     }
     // check if the publication date is after the creation date
     const creationDate = dayjs(req.body.creationDate);
-    const publicationDate = dayjs(req.body.publicationDate);
+    const publicationDate = req.body.publicationDate ? dayjs(req.body.publicationDate) : '';
 
-    if (publicationDate !== '' && creationDate.isAfter(publicationDate)) {
+    if (publicationDate !== '' &&  creationDate.isAfter(publicationDate)) {
       return res.status(422).json({ error: 'creation date cannot be greater than the publication date' });
     }
 
@@ -260,7 +277,7 @@ app.put(
       contents: req.body.contents
     };
     try {
-      const pageChecked = await pageDao.getPageByIdAndContents(req.params.id);
+      const pageChecked = await pageDao.getPageById(req.params.id);
       if (pageChecked.error)
         return res.status(404).json(pageChecked);
       const result = await pageDao.updatePage(req.params.id, page); // NOTE: updatePage returns the newly updated object
@@ -271,26 +288,30 @@ app.put(
   }
 );
 
-// 5. Delete an existing page, given its "id"
+// 6. Delete an existing page, given its "id"
 // DELETE /api/pages/<id>
 // Given a page id, this route deletes the associated page.
 app.delete(
   '/api/pages/:id',
   isLoggedIn,
-  [check('id').isInt()],
+  [check('id').isInt({min:1}),],
   async (req, res) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(422).json({ errors: errors.array() });
       }
+      const resultPage = await pageDao.getPageById(req.params.id);
+      if(resultPage.error)
+           return res.status(404).json(resultPage);
+
+      if (!req.hasOwnProperty('user') || (req.user.id != resultPage.authorid && req.user.role != "admin")) {
+        return res.status(401).json({ error: 'User cannot do this operation' });
+      }
       // If there is no page with the specified id, the delete operation is considered successful.
       const result = await pageDao.deletePage(req.params.id);
-      if (result == null) {
-        return res.status(200).json({});
-      } else {
-        return res.status(404).json(result);
-      }
+      return res.status(200).json({});
+
     } catch (err) {
       res.status(503).json({ error: `Database error during the deletion of page ${req.params.id}: ${err} ` });
     }
@@ -304,20 +325,15 @@ app.delete(
 app.get('/api/images', async (req, res) => {
   try {
     const result = await imageDao.getImages();
-    if (result.error) {
-      res.status(404).json(result);
-    } else {
-      res.json(result);
-    }
+    res.json(result);
   } catch (err) {
-    res.status(503).json(err).end(); 
+    res.status(500).json(err).end(); 
   }
 });
 
 /*** Title APIs  ***/
 // 1. Update the title, by providing all the relevant information
 // PUT /api/titles
-
 app.put(
   '/api/titles',
   isLoggedIn,
@@ -330,7 +346,9 @@ app.put(
       return res.status(422).json({ errors: errors.array() });
     }
     try {
-
+      if ( !req.hasOwnProperty('user') || req.user.role != "admin") {
+        return res.status(401).json({ error: 'User cannot do this operation' });
+      }
       const result = await titleDao.updateTitle(req.body.title); // NOTE: updatePage returns the newly updated object
       if (result.error) {
         res.status(404).json(result);
@@ -351,13 +369,9 @@ app.get(
   async (req, res) => {
    try {
       const result = await titleDao.getTitle(); // NOTE: updatePage returns the newly updated object
-      if(result.error){
-        res.status(404).json({error: "Title not found"});
-      } else{
-          res.status(200).json(result);
-      }
+      res.status(200).json(result);
     } catch (err) {
-      res.status(503).json({ error: `Database error getting the title: ${err}` });
+      res.status(500).json(err).end(); 
     }
   }
 );

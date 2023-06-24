@@ -19,11 +19,11 @@ function App() {
   const [pages, setPages] = useState([]);
   const [users, setUsers] = useState([]);
   const [images, setImages] = useState([]);
-  const [loggedin, setLoggedin] = useState(false); //TO DO SET TO FALSE
+  const [loggedin, setLoggedin] = useState(false); 
   const [message, setMessage] = useState('');
-  const [title, setTitle] = useState('CMSmall');
-  const [dirtyPages, setDirtyPages] = useState(false);       //used to update pages
-  const [dirtyAuth, setDirtyAuth] = useState(false);         //used to update auth
+  const [title, setTitle] = useState('');
+  const [dirtyPages, setDirtyPages] = useState(false);         //used to update pages
+  const [dirtyAuth, setDirtyAuth] = useState(false);           //used to update auth
   const [dirtyImage, setDirtyImage] = useState(false);         //used to update image
   const [dirtyTitle, setDirtyTitle] = useState(false);         //used to update image
 
@@ -33,8 +33,33 @@ function App() {
       if (err.error) msg = err.error;
       else if (String(err) === "string") msg = String(err);
       else msg = "Unknown Error";
+      if(msg ==="Not authorized") setLoggedin(false);
       setMessage({msg:msg, type:"danger"}); // WARN: a more complex application requires a queue of messages. In this example only last error is shown.
-    }
+    } 
+
+    const getPages = async () => {
+      try {
+        setDirtyPages(true);
+        if(loggedin){  
+          if ( userLogged?.role === 'admin') {
+            const usersInfo = await API.getUsers();
+            setUsers(usersInfo);
+          }
+              const pages = await API.getPages();
+              setPages(pages);
+        } else {
+              const pages = await API.getPublicatedPages();
+              setPages(pages)
+        }
+        setDirtyPages(false);
+      } catch (error) {
+        setPages([]);
+        setUsers([]);
+        handleErrors(error);
+        setDirtyPages(false);
+      }
+    };
+
     useEffect(() => {
       const checkAuth = async () => {
         try {
@@ -46,9 +71,7 @@ function App() {
           setDirtyAuth(false);
         } catch (err) {
           handleErrors(err);
-          setLoggedin(false);
           setUserLogged({});
-          setUsers([]);
           setDirtyAuth(false);
         }
       };
@@ -57,23 +80,6 @@ function App() {
       },[]);
       
 
-
-      const getPages = async () => {
-        try {
-          setDirtyPages(true);
-            if (loggedin &&  userLogged?.role === 'admin') {
-              const usersInfo = await API.getUsers();
-              setUsers(usersInfo);
-            }
-          const pages = await API.getPages();
-          setPages(pages);
-          setDirtyPages(false);
-        } catch (error) {
-          handleErrors(error);
-          setDirtyPages(false);
-          setLoggedin(false);
-        }
-      };
   useEffect(() => {
       getPages();  //also when loggedin must add []
   },[loggedin])
@@ -87,7 +93,7 @@ function App() {
             setDirtyImage(false);
             } catch (err) {
             handleErrors(err);
-        setDirtyImage(false);
+            setDirtyImage(false);
         }
       };
       getImages();
@@ -102,6 +108,7 @@ function App() {
         setDirtyTitle(false);
       } catch (err) {
         handleErrors(err);
+        setTitle('');
         setDirtyTitle(false);
       }
     };   
@@ -112,30 +119,29 @@ function App() {
   const handleLogin = async (credentials) => {
     try {
       const user = await API.login(credentials);
-      setLoggedin(true);
       setUserLogged(user);
+      setLoggedin(true);
       setMessage({ msg: `Welcome, ${user.username}!`, type: 'success' });
       return true;
     } catch (err) {
-      handleErrors(err);
-      setLoggedin(false);
       setUserLogged({});
-      setLoggedin(false);
       setUsers([]);
+      setLoggedin(false);
       setMessage({msg: "Wrong username/ password", type: 'danger'});
-      return false;
+      throw err;
     }
   };
 
   const handleLogout = async () => {
     try{ 
     await API.logout();
+    setUserLogged({});
+    setUsers([]);
+    setPages([])
     setLoggedin(false);
     setMessage({ msg: `Successfully loggedout`, type: 'success' })
     } catch (err) {
       handleErrors(err);
-      setUserLogged({});
-      setUsers([]);
     }
   };
 
@@ -144,7 +150,6 @@ function App() {
     await API.deletePage(pageid);
     await getPages();
     } catch (err) {
-      setLoggedin(false);
       handleErrors(err);
     }
   };
@@ -153,9 +158,9 @@ function App() {
     try{
     await API.addPage(page);
     await getPages();
+    return true;
     } catch (err) {
-      setLoggedin(false);
-      handleErrors(err);
+      throw err;
     }
   };
 
@@ -163,18 +168,18 @@ function App() {
     try{
     await API.updatePage(pageid, page);
     await getPages();
+    return true;
     } catch (err) {
-      setLoggedin(false);
-      handleErrors(err);
+      throw err;
     }
   };
+
   const handleTitle = async (skrachTitle) => {
     try {
       const titleUpdate = await API.updateTitle(skrachTitle);
       setTitle(titleUpdate)
       setMessage({ msg: `Title successfully changed`, type: 'success' });
     } catch (err) {
-      setLoggedin(false);
       handleErrors(err);
     }
   };
@@ -240,7 +245,7 @@ function App() {
           />
           <Route
             path="/pages/:pageid/preview"
-            element={<Page pages={pages} />}
+            element={<Page handleErrors={handleErrors}  />}
           />
           <Route
             path="/pages/:pageid/edit"
@@ -260,7 +265,7 @@ function App() {
               )
             }
           />
-          <Route path="/login" element={<LoginForm login={handleLogin} />} />
+          <Route path="/login" element={<LoginForm login={handleLogin} handleErrors={handleErrors}/>} />
           <Route path="*" element={<NotFoundLayout />} />
         </Route>
       </Routes>
