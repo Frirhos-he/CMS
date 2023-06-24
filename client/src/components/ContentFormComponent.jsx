@@ -3,7 +3,7 @@ import { Form, Button, Row, Col, } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 
 function ContentForm(props) {
-  const pageid = props.pageid
+  const pageid = props.pageid 
   const images = props.images;
   const lastId = props.lastId;
   const lastPosition = props.lastPosition;
@@ -26,7 +26,7 @@ function ContentForm(props) {
       const newId = lastId+1;   // it won't be used for the db just for frontend and handlingArrow
       const contentObject = {
         id:   newId,
-        pageid: pageid,
+        pageid: pageid ? Number(pageid) : '',
         type: contentType,
         text: text,
         position: newPosition

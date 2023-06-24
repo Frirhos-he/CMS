@@ -94,7 +94,7 @@ function PageForm(props) {
         position: position > positionToFix ? position - 1 : position,
       };
     });
-
+    console.log(updatedContents)
     setContents(updatedContents);
   };
 
@@ -149,7 +149,6 @@ function PageForm(props) {
   };
 
   const setNewContent = (contentObject) => {
-    
     const newContents = [...contents, contentObject];
     setContents(newContents);
     setLastPosition((lastPosition) => lastPosition + 1);
@@ -250,6 +249,7 @@ function PageForm(props) {
                 />
                       {observeContentForm ? (
                         <ContentForm
+                          pageid={pageid}
                           images={images}
                           setObserveContentForm={setObserveContentForm}
                           setNewContent={setNewContent}
