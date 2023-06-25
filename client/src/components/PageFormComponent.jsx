@@ -10,7 +10,8 @@ import ErrorContenxt from '../errorContenxt';
 function PageForm(props) {
   const { pageid } = useParams();
   const navigate = useNavigate();
-  const handleErrors = useContext(ErrorContenxt);
+  const {handleErrors} = useContext(ErrorContenxt);
+  console.log(handleErrors)
 
   const { users, userLogged } = props;
 

@@ -197,6 +197,7 @@ const getPageById = async (id) => {
 
 const updatePage = async (pageid, page) => {
   try {
+    console.log(page)
     if (pageid === null) {
       throw {error: "id is not a number"}
     }

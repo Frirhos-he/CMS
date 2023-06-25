@@ -9,7 +9,7 @@ function BackOfficeLayout(props) {
   const { user } = props;
   const [loadingPages, setLoadingPages] = useState(false);         //used to update pages
   const [pages, setPages] = useState([]);                      //used to store infos of the pages available to the current 
-  const handleErrors = useContext(ErrorContenxt);
+  const {handleErrors} = useContext(ErrorContenxt);
 
   const getPages = async () => {
     try {

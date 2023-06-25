@@ -12,7 +12,7 @@ function NavHeader(props) {
   const [title, setTitle] = useState('');                    //used to store the title displayed
   const [dirtTitle, setDirtTitle] = useState(false);         //used make loading on title shown
   const [enabledForm, setEnabledForm] = useState(false);     //used to enable the form title
-  const handleErrors = useContext(ErrorContenxt);
+  const {handleErrors} = useContext(ErrorContenxt);
 
 
 

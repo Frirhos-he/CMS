@@ -7,7 +7,7 @@ import ErrorContenxt from '../errorContenxt';
 function Page(props) {
 
   const { pageid } = useParams();
-  const handleErrors = useContext(ErrorContenxt);
+  const {handleErrors} = useContext(ErrorContenxt);
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(false);
 

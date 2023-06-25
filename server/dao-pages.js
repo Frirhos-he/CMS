@@ -18,8 +18,7 @@ exports.getPages = () => {
         reject(err);
       }
       const pages = rows.map((e) => {
-        // WARNING: the database returns only lowercase fields. So, to be compliant with the client-side, we convert "watchdate" to the camelCase version ("watchDate").
-        const page = Object.assign({}, e, { creationDate: e.creationdate, publicationDate: e.publicationdate }); // adding camelcase "watchDate"
+        const page = Object.assign({}, e, { creationDate: e.creationdate, publicationDate: e.publicationdate });
         delete page.creationdate; // removing lowercase 
         delete page.publicationdate; // removing lowercase
         return page;
@@ -40,8 +39,7 @@ exports.getPublicatedPages = () => {
         reject(err);
       }
       const pages = rows.map((e) => {
-        // WARNING: the database returns only lowercase fields. So, to be compliant with the client-side, we convert "watchdate" to the camelCase version ("watchDate").
-        const page = Object.assign({}, e, { creationDate: e.creationdate, publicationDate: e.publicationdate }); // adding camelcase "watchDate"
+        const page = Object.assign({}, e, { creationDate: e.creationdate, publicationDate: e.publicationdate });
         delete page.creationdate; // removing lowercase 
         delete page.publicationdate; // removing lowercase
 

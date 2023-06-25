@@ -272,8 +272,8 @@ app.put(
     const page = {
       title: req.body.title,
       authorid: req.body.authorid,
-      creationDate: req.body.creationDate, // A different method is required if also time is present. For instance: (req.body.watchDate || '').split('T')[0]
-      publicationDate: req.body.publicationDate, // A different method is required if also time is present. For instance: (req.body.watchDate || '').split('T')[0]
+      creationDate: req.body.creationDate, 
+      publicationDate: req.body.publicationDate,
       contents: req.body.contents
     };
     try {

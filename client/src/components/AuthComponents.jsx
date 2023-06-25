@@ -5,7 +5,7 @@ import ErrorContenxt from '../errorContenxt';
 
 function LoginForm(props) {
   const navigate = useNavigate();
-  const handleErrors = useContext(ErrorContenxt);
+  const {handleErrors} = useContext(ErrorContenxt);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
