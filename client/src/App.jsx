@@ -37,6 +37,10 @@ function App() {
         const user = await API.login(credentials);
         setUserLogged(user);
         setLoggedin(true);
+        if ( user?.role === 'admin') {
+          const usersInfo = await API.getUsers();
+          setUsers(usersInfo);
+        }
         setMessage({ msg: `Welcome, ${user.username}!`, type: 'success' });
       } catch (err) {
         setUserLogged({});
