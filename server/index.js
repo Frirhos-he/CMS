@@ -156,6 +156,7 @@ app.get('/api/pages/publicated', async (req, res) => {
 // 3. Retrieve a page, given its “id”.
 // GET /api/pages/<id>
 // Given a page id, this route returns the associated page and contents.
+// it also check credentials
 app.get('/api/pages/:id', [check('id').isInt({ min: 1 })], async (req, res) => {
   try {
     const errors = validationResult(req);
