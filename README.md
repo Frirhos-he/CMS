@@ -266,6 +266,7 @@
 - `PageForm` (in `PageFormComponent.js`): A form where to insert infos of a page to create while logged in
 - `ContentTable` (in `PageFormComponent.jsx`): displays a preview of the content created so far before the submission in the page form while logged in
 - `NavHeader` (in `NavbarComponents.jsx`): A navbar showing the title of the website that can be edited in case of being admin and login/logout link to navigate to the LoginForm
+- `TitleForm` (in `TitleForm.jsx`): A form where to change the name of the webpage
 - `FrontOfficeLayout` (in `FrontOfficeComponents.jsx`): A page that shows publicated pages to all non-logged in user
 - `BackOfficeLayout` (in `BackOfficeLayout.jsx`): A page that shows pages to all logged in user with possibility of creating/preview a page and edit/remove a page in case of owner/admin of the page.
 - `ContentForm` (in `ContentForm.jsx`): A form where to insert infos of a content relative to a page while logged in

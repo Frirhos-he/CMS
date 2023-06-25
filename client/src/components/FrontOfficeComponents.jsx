@@ -1,10 +1,34 @@
-import React from 'react';
-import { Row, Col, Table } from 'react-bootstrap';
+import { React, useState, useEffect } from 'react';
+import { Row, Col, Table, Button, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
+import API from '../API';
 
 function FrontOfficeLayout(props) {
-  const sortedPages = [...props.pages].sort(sortByPublicationDate);
+  const [dirtyPages, setDirtyPages] = useState(false);         //used to update pages
+  const [pages, setPages] = useState([]);                      //used to store infos of the pages available to the current 
+
+  const getPages = async () => {
+    try {      
+      setDirtyPages(true);
+            const pages = await API.getPublicatedPages();
+            setPages(pages)
+      }
+     catch (error) {
+      setPages([]);
+      handleErrors(error);
+    }
+    finally {
+      setDirtyPages(false);
+    }
+  };
+  
+    useEffect(() => {
+      getPages(); 
+  },[])
+
+
+  const sortedPages = [...pages].sort(sortByPublicationDate);
 
   const filteredPages = sortedPages.filter((page) => {
     const pageStatus = getPageStatus(page.publicationDate);
@@ -20,7 +44,14 @@ function FrontOfficeLayout(props) {
         </Col>
       </Row>
       <Row>
+        {dirtyPages ? 
+                    <Button variant="primary" disabled>
+                    <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
+                    Loading...
+                  </Button>
+        :
         <PageTable pages={filteredPages} />
+        }
       </Row>
     </>
   );

@@ -1,69 +1,69 @@
 import React from 'react';
 import { Navbar, Container, Row, Col, Button, Form } from 'react-bootstrap';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { TitleForm } from './TitleForm';
+import API from '../API';
+
 
 function NavHeader(props) {
-  const { loggedin, handleLogout, title, user, handleTitle } = props;
-  const [dirtTitle, setDirtTitle] = useState(false);
-  const [skrachTitle, setSkrachTitle] = useState(title)
+  const { loggedin, handleLogout, user, handleErrors, setMessage } = props;
+  const [title, setTitle] = useState('');                    //used to store the title displayed
+  const [dirtTitle, setDirtTitle] = useState(false);         //used make loading on title shown
+  const [enabledForm, setEnabledForm] = useState(false);     //used to enable the form title
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Call the parent form's callback function with the contentObject
-    handleTitle(skrachTitle);
-    setDirtTitle(false);
-    // Reset the form fields
-    setSkrachTitle('')
+
+  const handleTitle = async (changedTitle) => {
+    try {
+      const titleUpdate = await API.updateTitle(changedTitle);
+      setTitle(titleUpdate)
+      setMessage({ msg: `Title successfully changed`, type: 'success' });
+      setEnabledForm(false);
+    } catch (err) {
+      handleErrors(err);
+    }
   };
+  
+  const getTitle = async () => {
+    try {
+      setDirtTitle(true);
+      const titleRes = await API.getTitle();  // a string of representing title
+      setTitle(titleRes)
+      setDirtTitle(false);
+    } catch (err) {
+      handleErrors(err);
+      setTitle('');
+      setDirtTitle(false);
+    }
+  }; 
+  useEffect(() => {  
+    getTitle();
+  }, []);
+
   
 
   return (
     <Navbar bg="primary" variant="dark" className="rounded">
       <Container fluid>
         <Row className="w-100">
-          <Col className="d-flex align-items-center justify-content-start ">
-           
+          <Col className="d-flex align-items-center justify-content-start ">     
              
-              {dirtTitle ? 
-              
-                 <Form onSubmit={handleSubmit} validated>
-                     <Form.Group >
-                       <Form.Control
-                         type="text"
-                         minLength={2}
-                         required={true}
-                         value={skrachTitle}
-                         onChange={(event) => setSkrachTitle(event.target.value)}
-                       />
-                     </Form.Group>
-                     <Row className='mt-1'>
-                          <Col>
-                                <Button
-                                  className="btn btn-success"
-                                  type="submit"
-                                >
-                                  Submit
-                                </Button>
-                              </Col>
-                              <Col >
-                                <Button className="btn btn-danger" onClick={() => setDirtTitle(false)}>
-                                  Cancel
-                                </Button>
-                              </Col>
-                        </Row>
-                   </Form>
+              {!enabledForm ? 
+                              <>
+                              {dirtTitle ? 
+                                 null
+                                :
+                                <Link to="/pages" className="navbar-brand">{title}</Link>
+                              }
+
+                              {loggedin && user.role === 'admin' &&  (
+                                <Button onClick={() => setEnabledForm(true)} className="btn btn-outline-light"><i className="bi bi-pencil-square"></i></Button>
+                                )}
+                              </>
               :
-                <>
-                <Link to="/pages" className="navbar-brand">{title}</Link>
-                {loggedin && user.role === 'admin' &&  (
-                  <Button onClick={() => setDirtTitle(true)} className="btn btn-outline-light"><i className="bi bi-pencil-square"></i></Button>
-                  )}
-                </>
-                }
+                <TitleForm setEnabledForm={setEnabledForm} handleTitle={handleTitle} title={title}/>            
 
-             
-
+              }
           </Col>
           <Col className="d-flex justify-content-end align-self-center">
             {loggedin ? (

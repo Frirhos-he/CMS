@@ -1,31 +1,75 @@
-import React from 'react';
-import { Row, Col, Table, Button } from 'react-bootstrap';
+import { React, useState, useEffect } from 'react';
+import { Row, Col, Table, Button, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
+import API from '../API';
+
 
 function BackOfficeLayout(props) {
-  const { pages, handleDeletePage, user } = props;
+  const { user, handleErrors, users} = props;
+  const [loadingPages, setLoadingPages] = useState(false);         //used to update pages
+  const [pages, setPages] = useState([]);                      //used to store infos of the pages available to the current 
 
-  const sortedPages = [...pages].sort(sortByPublicationDate);
+  const getPages = async () => {
+    try {
+      setLoadingPages(true);
+      if(user){  
+            const pages = await API.getPages();
+            const sortedPages = [...pages].sort(sortByPublicationDate);
+            setPages(sortedPages);
+      } else {
+        setPages();
+      }
+    } catch (error) {
+      setPages([]);
+      handleErrors(error);
+    }
+    finally {
+      setLoadingPages(false);
+    }
+  };
+
+  const handleDeletePage = async (pageid) => {
+    try{
+    await API.deletePage(pageid);
+    await getPages();
+    } catch (err) {
+      handleErrors(err);
+    }
+  };
+
+    useEffect(() => {
+        getPages(); 
+    },[user])
+
 
   return (
     <>
       <Row>
         <Col>
           <h1>Welcome to BackOfficeLayout!</h1>
-          <p className="lead">We have {sortedPages.length} pages.</p>
+          <p className="lead">We have {pages.length} pages.</p>
         </Col>
       </Row>
-      <Row>
-        <PageTable pages={sortedPages} handleDeletePage={handleDeletePage} user={user} />
-      </Row>
-      <Row className="mt-4">
-        <Col xs={{ offset: 10 }}>
-          <Link className="btn btn-success px-3 py-2" to="./add">
-            <i className="bi bi-plus-circle-fill"></i>
-          </Link>
-        </Col>
-      </Row>
+      {!loadingPages ? 
+            <>
+            <Row>
+              <PageTable pages={pages} handleDeletePage={handleDeletePage} user={user} />
+            </Row>
+            <Row className="mt-4">
+              <Col xs={{ offset: 10 }}>
+                <Link className="btn btn-success px-3 py-2" to="./add">
+                  <i className="bi bi-plus-circle-fill"></i>
+                </Link>
+              </Col>
+            </Row>
+            </>
+            :
+            <Button variant="primary" disabled>
+            <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
+            Loading...
+          </Button>
+      }
     </>
   );
 }
@@ -75,7 +119,7 @@ function PageRow(props) {
       <td>
         {enableChangesDelete(page) && (
           <>
-            <Link className="btn btn-primary" to={`/pages/${page.id}/edit`}>
+            <Link className="btn btn-primary" to={`/pages/${page.id}/edit`}  state={serializePage(page)}>
               <i className="bi bi-pencil-square"></i>
             </Link>
             &nbsp;
@@ -124,5 +168,10 @@ const getPageStatus = (publicationDate) => {
     return 'Published';
   }
 };
+
+function serializePage(page) { //because it is an object that contains vector! (remember that vector and object cannot be used in raw by useLocation)
+  const serializedPage = JSON.stringify(page)
+  return serializedPage;
+}
 
 export default BackOfficeLayout;

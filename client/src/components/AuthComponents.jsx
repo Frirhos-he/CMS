@@ -13,8 +13,7 @@ function LoginForm(props) {
     event.preventDefault();
     const credentials = { username, password };
     props.login(credentials)
-      .then((res) => {
-        if(res)
+      .then(() => {
           navigate("/pages")}).catch(err => props.handleErrors(err) )
   };
 

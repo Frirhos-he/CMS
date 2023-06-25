@@ -1,14 +1,20 @@
 import dayjs from 'dayjs';
 import { useState, useEffect } from 'react';
 import { Form, Button, Table, Row, Col, Spinner} from 'react-bootstrap';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation} from 'react-router-dom';
 import { ContentForm } from './ContentFormComponent';
 import API from '../API';
 
+
+
 function PageForm(props) {
   const { pageid } = useParams();
-  const { images, users, role, userLogged, updatePage, addPage, handleErrors } = props;
   const navigate = useNavigate();
+  const { users, userLogged, handleErrors } = props;
+
+
+  const [images, setImages] = useState([]);                    //used to store images available to show
+  const [loadingImage, setLoadingImage] = useState(false);         //used to update image
 
   const [title, setTitle] = useState('');
   const [authorID, setAuthorID] = useState(userLogged.id);
@@ -17,11 +23,10 @@ function PageForm(props) {
   const [contents, setContents] = useState([]);
   const [observeContentForm, setObserveContentForm] = useState(false);
   const [editContent, setEditContent] = useState({});
-  const [editPage, setEditPage] = useState(false);
   const [lastPosition, setLastPosition] = useState(0);
   const [loading, setLoading] = useState(false);
-  
-  useEffect(() => {
+
+  useEffect(() => {  // do this operation only when mounted, don't refresh the content when manually change the url, because need to refresh and redirect to loggin
     const getPage = async () => {
       try {
         setLoading(true);
@@ -31,55 +36,50 @@ function PageForm(props) {
         setContents(page.contents);
         setAuthorID(page.authorid);
         setTitle(page.title);
-        setEditPage(true);
-        
-        const maxPosition = page.contents.reduce((max, content) => {
-          return content.position > max ? content.position : max;
-        }, 0);
-        
-        setLastPosition(maxPosition);
-        setLoading(false);
+        setLastPosition(maxPosition(page));
       } catch (error) {
         handleErrors(error)
+      } finally {
         setLoading(false);
       }
     };
-
     if (pageid) {
       getPage();
     }
   }, [pageid]);
 
-  const handleSubmit = async (event) => {
+  useEffect(() => {
+    const getImages = async () => {
+      try{
+        setLoadingImage(true);
+          const images = await API.getImages();
+          setImages(images);
+          } catch (err) {
+          handleErrors(err);
+      } finally {
+        setLoadingImage(false);
+      }
+    };
+    getImages();
+  },[]);
+
+  const handleSubmit = (event) => {
     event.preventDefault();
-    let result = false;
-    const formattedPublicationDate = publicationDate ? dayjs(publicationDate) : publicationDate;
+    const formattedPublicationDate = publicationDate ? dayjs(publicationDate) : ''; 
   
     const page = {
       title: title,
       authorid: authorID,
       creationDate: creationDate,
       publicationDate: formattedPublicationDate,
-      contents: contents,
+      contents: contents
     };
   
-    try {
-      if (!editPage) {
-        result = await addPage(page);
+      if (!pageid) {
+        API.addPage(page).then(() => navigate('/')).catch((err) => handleErrors(err));
       } else {
-        result = await updatePage(pageid, page);
+        API.updatePage(pageid, page).then(() => navigate('/')).catch((err) => handleErrors(err));
       }
-      if (result) {
-        navigate('/');
-        setEditPage(false);
-        setPublicationDate("");
-        setContents([]);
-        setAuthorID("");
-        setTitle("");
-      }
-    } catch (error) {
-      handleErrors(error);
-    }
   };
   
 
@@ -134,7 +134,6 @@ function PageForm(props) {
   const checkConditions = () => {
     let header = false;
     let imageOrParagraph = false;
-
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i];
       if (content.type === 'header') {
@@ -167,7 +166,7 @@ function PageForm(props) {
 
   return (
     <>
-    {loading ?   
+    {loading && loadingImage ?   
     <Button variant="primary" disabled>
         <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
             Loading...
@@ -199,7 +198,7 @@ function PageForm(props) {
                       </Form.Group>
                     </Col>
                   </Row>
-                  {role === 'admin' && users && (
+                  {userLogged?.role === 'admin' && users && (
                     <Row>
                       <Form.Group className="mb-3">
                         <Form.Label>Author</Form.Label>
@@ -346,5 +345,9 @@ function ContentRow(props) {
     </tr>
   );
 }
+
+const maxPosition = (page) => page?.contents?.reduce((max, content) => {
+  return content.position > max ? content.position : max;
+}, 0);
 
 export default PageForm;

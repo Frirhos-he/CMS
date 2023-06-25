@@ -16,7 +16,6 @@ const login = async (credentials) => {
       credentials: 'include',
       body: JSON.stringify(credentials),
     });
-
     if (response.ok) {
       const user = await response.json();
       return user;
@@ -25,6 +24,7 @@ const login = async (credentials) => {
       throw errMessage;
     }
   } catch (error) {
+    console.log(error)
     if (error.hasOwnProperty('error')) {
       throw error;
     } else {
@@ -69,6 +69,7 @@ const getUsers = async () => {
       throw errMessage;
     }
   } catch (error) {
+    console.log(error);
     if (error.hasOwnProperty('error')) {
       throw error;
     } else {
