@@ -24,7 +24,6 @@ const login = async (credentials) => {
       throw errMessage;
     }
   } catch (error) {
-    console.log(error)
     if (error.hasOwnProperty('error')) {
       throw error;
     } else {
@@ -38,7 +37,7 @@ const getUserInfo = async () => {
     const response = await fetch(SERVER_URL + '/sessions/current', {
       credentials: 'include',
     });
-    
+
     if (response.ok) {
       const user = await response.json();
       return user;
@@ -69,7 +68,6 @@ const getUsers = async () => {
       throw errMessage;
     }
   } catch (error) {
-    console.log(error);
     if (error.hasOwnProperty('error')) {
       throw error;
     } else {
