@@ -19,7 +19,7 @@ function BackOfficeLayout(props) {
             const sortedPages = [...pages].sort(sortByPublicationDate);
             setPages(sortedPages);
       } else {
-        setPages();
+        setPages([]);;
       }
     } catch (error) {
       setPages([]);
@@ -120,7 +120,7 @@ function PageRow(props) {
       <td>
         {enableChangesDelete(page) && (
           <>
-            <Link className="btn btn-primary" to={`/pages/${page.id}/edit`}  state={serializePage(page)}>
+            <Link className="btn btn-primary" to={`/pages/${page.id}/edit`}>
               <i className="bi bi-pencil-square"></i>
             </Link>
             &nbsp;
@@ -169,10 +169,5 @@ const getPageStatus = (publicationDate) => {
     return 'Published';
   }
 };
-
-function serializePage(page) { //because it is an object that contains vector! (remember that vector and object cannot be used in raw by useLocation)
-  const serializedPage = JSON.stringify(page)
-  return serializedPage;
-}
 
 export default BackOfficeLayout;

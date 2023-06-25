@@ -37,13 +37,11 @@ const getUserInfo = async () => {
     const response = await fetch(SERVER_URL + '/sessions/current', {
       credentials: 'include',
     });
-
+    const user = await response.json();
     if (response.ok) {
-      const user = await response.json();
       return user;
     } else {
-      const errMessage = await response.json();
-      throw errMessage;
+      throw  user
     }
   } catch (error) {
     if (error.hasOwnProperty('error')) {
@@ -171,7 +169,9 @@ const getPageById = async (id) => {
     if (!Number.isInteger(Number(id)) || Number(id) < 1) {
       throw { error: 'id must be well formatted' };
     } 
-    const response = await fetch(SERVER_URL + `/pages/${id}`);
+    const response = await fetch(SERVER_URL + `/pages/${id}`,{
+      credentials: 'include'
+    });
 
     if (response.ok) {
       const page = await response.json();
@@ -183,6 +183,7 @@ const getPageById = async (id) => {
 
       return page;
     } else {
+
       const errMessage = await response.json();
       throw errMessage;
     }
@@ -197,7 +198,6 @@ const getPageById = async (id) => {
 
 const updatePage = async (pageid, page) => {
   try {
-    console.log(page)
     if (pageid === null) {
       throw {error: "id is not a number"}
     }
@@ -234,6 +234,12 @@ const updatePage = async (pageid, page) => {
     ) {
       throw { error: 'Invalid publication date format' };
     }
+
+    const creationDate = dayjs(page.creationDate);
+    if (page.publicationDate !== '' && creationDate.isAfter(page.publicationDate)) {
+      throw { error: 'creation date cannot be after the publication date' };
+     }
+      
     
     if (!Array.isArray(page.contents) || page.contents.length < 2) {
       throw { error: 'Contents must be an array with a minimum length of 2' };
@@ -301,6 +307,10 @@ const addPage = async (page) => {
       page.publicationDate !== '' && (!page.publicationDate.isValid() || page.publicationDate.format('YYYY-MM-DD').length != 10 )
    ) {
      throw { error: 'Invalid publication date format' };
+   }
+
+   if (page.publicationDate !== '' && page.creationDate.isAfter(page.publicationDate)) {
+    throw { error: 'creation date cannot be after the publication date' };
    }
     
     if (!Array.isArray(page.contents) || page.contents.length < 2) {

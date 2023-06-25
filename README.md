@@ -75,7 +75,7 @@
     ```
 - GET `/api/pages/:id`
   - request parameters:```id: 6```
-  - response: 200 OK (success) or 500 Internal Server Error (generic error) or 422 Unprocessable Entity (invalid body) or 404 Not Found (Page not found)
+  - response: 200 OK (success) or 500 Internal Server Error (generic error) or 422 Unprocessable Entity (invalid body) or 404 Not Found (Page not found) or 401 (Cannot retrieve that page")
   - response body content
     ```
 
@@ -282,7 +282,7 @@
 ## Users Credentials
 
 
-  I assumed that passwords must have a minimum length of 6 characters and has different salts and conseguently different hash
+  I assumed that passwords must have a minimum length of 6 characters and has different salts and conseguently different hashes
 
 |      username       |   password    |
 | :-----------------: | :-----------: |

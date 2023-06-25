@@ -1,7 +1,7 @@
 import React from 'react';
-import { Navbar, Container, Row, Col, Button, Form } from 'react-bootstrap';
+import { Navbar, Container, Row, Col, Button, Spinner } from 'react-bootstrap';
 import { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate} from 'react-router-dom';
 import { TitleForm } from './TitleForm';
 import API from '../API';
 import ErrorContenxt from '../errorContenxt';
@@ -13,7 +13,7 @@ function NavHeader(props) {
   const [dirtTitle, setDirtTitle] = useState(false);         //used make loading on title shown
   const [enabledForm, setEnabledForm] = useState(false);     //used to enable the form title
   const {handleErrors} = useContext(ErrorContenxt);
-
+  const navigate = useNavigate();
 
 
   const handleTitle = async (changedTitle) => {
@@ -54,7 +54,10 @@ function NavHeader(props) {
               {!enabledForm ? 
                               <>
                               {dirtTitle ? 
-                                 null
+                                 <Button variant="primary" disabled>
+                                 <Spinner as="span" animation="grow" size="sm" role="status" aria-hidden="true"/>
+                                 Loading...
+                               </Button>
                                 :
                                 <Link to="/pages" className="navbar-brand">{title}</Link>
                               }
@@ -70,7 +73,8 @@ function NavHeader(props) {
           </Col>
           <Col className="d-flex justify-content-end align-self-center">
             {loggedin ? (
-              <Button onClick={handleLogout} className="btn btn-outline-light">
+              <Button onClick={(() => {handleLogout().then(() =>navigate("/"))})}
+               className="btn btn-outline-light">
                 Logout
               </Button>
             ) : (

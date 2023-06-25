@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import API from '../API';
 import ErrorContenxt from '../errorContenxt';
 
-function FrontOfficeLayout(props) {
+function FrontOfficeLayout() {
   const [dirtyPages, setDirtyPages] = useState(false);         //used to update pages
   const [pages, setPages] = useState([]);                      //used to store infos of the pages available to the current 
   const {handleErrors} = useContext(ErrorContenxt);

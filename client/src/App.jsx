@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { BrowserRouter, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { NotFoundLayout } from './components/PageLayout';
 import { LoginForm } from './components/AuthComponents';
@@ -20,7 +20,7 @@ function App() {
   const [users, setUsers] = useState([]);                      //used to store infos about the 
   const [loggedin, setLoggedin] = useState(false); 
   const [message, setMessage] = useState('');
-
+  
     // If an error occurs, the error message will be shown
     const handleErrors = (err) => {
       let msg = '';
@@ -37,10 +37,6 @@ function App() {
         const user = await API.login(credentials);
         setUserLogged(user);
         setLoggedin(true);
-        if ( user?.role === 'admin') {
-          const usersInfo = await API.getUsers();
-          setUsers(usersInfo);
-        }
         setMessage({ msg: `Welcome, ${user.username}!`, type: 'success' });
       } catch (err) {
         setUserLogged({});
@@ -55,11 +51,13 @@ function App() {
       try{ 
       await API.logout();
       setUserLogged({});
-      setUsers([]);
       setLoggedin(false);
-      setMessage({ msg: `Successfully loggedout`, type: 'success' })
+      setUsers([]);
+      setMessage({ msg: `Successfully loggedout`, type: 'success' });
+      return true;
       } catch (err) {
         handleErrors(err);
+        return false;
       }
     };
 
@@ -70,6 +68,10 @@ function App() {
           const userObject = await API.getUserInfo();
           setUserLogged(userObject);
           setLoggedin(true);
+          if ( userObject?.role === 'admin') {
+            const usersInfo = await API.getUsers();
+            setUsers(usersInfo);
+          }
           setMessage({msg:"You are logged in", type: 'success'})
         } catch (err) {
           handleErrors(err);

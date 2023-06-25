@@ -4,7 +4,7 @@ import { Container, Image, Row, Col, Button, Spinner } from 'react-bootstrap';
 import API from '../API';
 import ErrorContenxt from '../errorContenxt';
 
-function Page(props) {
+function Page() {
 
   const { pageid } = useParams();
   const {handleErrors} = useContext(ErrorContenxt);

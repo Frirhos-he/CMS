@@ -160,13 +160,18 @@ app.get('/api/pages/:id', [check('id').isInt({ min: 1 })], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
+      return res.status(422).json({ error: errors.array().map(error => error.msg).join(' ')});
     }
     const result = await pageDao.getPageById(req.params.id);
     if (result.error) {
       res.status(404).json(result);
     } else {
-      res.json(result);
+      const today = dayjs();
+      const publicationDate = dayjs(result.publicationDate);
+      if(req?.user || (publicationDate.isValid() && today.isAfter(publicationDate)))
+        res.json(result);
+      else
+      return res.status(401).json({ error: "Cannot retrieve that page" });
     }
   } catch (err) {
     res.status(500).json(err);
@@ -195,7 +200,7 @@ app.post(
     // Is there any validation error?
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
+      return res.status(422).json({ error: errors.array().map(error => error.msg).join(' ')});
     }
 
     const hasHeader = req.body.contents.some(obj => obj.type === 'header');
@@ -243,7 +248,7 @@ app.put(
     //validation error
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
+      return res.status(422).json({ error: errors.array().map(error => error.msg).join(' ')});
     }
     // body id == req id
     if (req.body.id != Number(req.params.id)) {
@@ -299,7 +304,7 @@ app.delete(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        return res.status(422).json({ errors: errors.array() });
+        return res.status(422).json({ error: errors.array().map(error => error.msg).join(' ')});
       }
       const resultPage = await pageDao.getPageById(req.params.id);
       if(resultPage.error)
@@ -343,7 +348,7 @@ app.put(
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
+      return res.status(422).json({ error: errors.array().map(error => error.msg).join(' ')});
     }
     try {
       if ( !req.hasOwnProperty('user') || req.user.role != "admin") {

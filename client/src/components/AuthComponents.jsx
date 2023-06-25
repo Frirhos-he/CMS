@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { Form, Button, Row, Col, Container, Alert } from 'react-bootstrap';
+import { Form, Button, Row, Col, Container } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import ErrorContenxt from '../errorContenxt';
 
@@ -8,8 +8,6 @@ function LoginForm(props) {
   const {handleErrors} = useContext(ErrorContenxt);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
-
 
 
   const handleSubmit = (event) => {
