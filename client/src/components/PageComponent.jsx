@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Container, Image, Row, Col, Button, Spinner } from 'react-bootstrap';
 import API from '../API';
+import ErrorContenxt from '../errorContenxt';
 
 function Page(props) {
-  const handleErrors = props.handleErrors;
+
   const { pageid } = useParams();
+  const handleErrors = useContext(ErrorContenxt);
   const [contents, setContents] = useState([]);
   const [loading, setLoading] = useState(false);
 

@@ -38,7 +38,7 @@ const getUserInfo = async () => {
     const response = await fetch(SERVER_URL + '/sessions/current', {
       credentials: 'include',
     });
-
+    
     if (response.ok) {
       const user = await response.json();
       return user;

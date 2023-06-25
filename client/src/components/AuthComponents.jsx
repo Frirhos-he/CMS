@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Form, Button, Row, Col, Container, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
+import ErrorContenxt from '../errorContenxt';
 
 function LoginForm(props) {
+  const navigate = useNavigate();
+  const handleErrors = useContext(ErrorContenxt);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
-  const navigate = useNavigate();
+
 
 
   const handleSubmit = (event) => {
@@ -14,7 +17,7 @@ function LoginForm(props) {
     const credentials = { username, password };
     props.login(credentials)
       .then(() => {
-          navigate("/pages")}).catch(err => props.handleErrors(err) )
+          navigate("/pages")}).catch(err => handleErrors(err) )
   };
 
   return (

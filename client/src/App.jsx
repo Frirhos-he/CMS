@@ -10,7 +10,8 @@ import FrontOfficeLayout from './components/FrontOfficeComponents';
 import Page from './components/PageComponent';
 import PageForm from './components/PageFormComponent';
 import API from './API';
-import { Container, Row, Alert, Button, Spinner } from 'react-bootstrap';
+import { Container, Row, Alert } from 'react-bootstrap';
+import ErrorContenxt from './errorContenxt';
 
 import './App.css';
 
@@ -73,7 +74,6 @@ function App() {
         } catch (err) {
           handleErrors(err);
           setUserLogged({});
-          
         }
       };
     
@@ -83,79 +83,77 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route
-          element={
-            <>
-              <NavHeader handleLogout={handleLogout} loggedin={loggedin}
-               handleErrors={handleErrors} setMessage={setMessage}
-               user={userLogged} />
-              <Container fluid className="mt-3">
-                {message && (
-                  <Row>
-                    <Alert variant={message.type} onClose={() => setMessage('')} dismissible>
-                      {message.msg}
-                    </Alert>
-                  </Row>
-                )}  
-                  <Outlet />            
-              </Container>
-            </>
-          }
-        >
-          <Route path="/" element={<Navigate to="/pages" replace />} />
-          <Route
-            path="/pages"
-            element={
-              loggedin ? (
-                <BackOfficeLayout
-                  user={userLogged}
-                  users={users}
-                  handleErrors={handleErrors}
-                />
-              ) : (
-                <FrontOfficeLayout handleErrors={handleErrors}/>
-              )
-            }
-          />
-          <Route
-            path="/pages/add"
-            element={
-              loggedin ? (
-                <PageForm
-                  users={users}
-                  userLogged={userLogged}
-                  handleErrors={handleErrors}
-                />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-          <Route
-            path="/pages/:pageid/preview"
-            element={<Page handleErrors={handleErrors}  />}
-          />
-          <Route
-            path="/pages/:pageid/edit"
-            element={
-              loggedin ? (
-                <PageForm
-                  users={users}
-                  userLogged={userLogged}
-                  handleErrors={handleErrors}
-                />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-          <Route path="/login" element={<LoginForm login={handleLogin} handleErrors={handleErrors}/>} />
-          <Route path="*" element={<NotFoundLayout />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
-}
+          <ErrorContenxt.Provider value={{ handleErrors }}>
+          <Routes>
+            <Route
+              element={
+                <>
+                  <NavHeader handleLogout={handleLogout} loggedin={loggedin}
+                     setMessage={setMessage}
+                  user={userLogged} />
+                  <Container fluid className="mt-3">
+                    {message && (
+                      <Row>
+                        <Alert variant={message.type} onClose={() => setMessage('')} dismissible>
+                          {message.msg}
+                        </Alert>
+                      </Row>
+                    )}  
+                      <Outlet />            
+                  </Container>
+                </>
+              }
+            >
+              <Route path="/" element={<Navigate to="/pages" replace />} />
+              <Route
+                path="/pages"
+                element={
+                  loggedin ? (
+                    <BackOfficeLayout
+                      user={userLogged}
+                    />
+                  ) : (
+                    <FrontOfficeLayout/>
+                  )
+                }
+              />
+              <Route
+                path="/pages/add"
+                element={
+                  loggedin ? (
+                    <PageForm
+                      users={users}
+                      userLogged={userLogged}
+                    />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+              <Route
+                path="/pages/:pageid/preview"
+                element={<Page/>}
+              />
+              <Route
+                path="/pages/:pageid/edit"
+                element={
+                  loggedin ? (
+                    <PageForm
+                      users={users}
+                      userLogged={userLogged}
+                    />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+              <Route path="/login" element={<LoginForm login={handleLogin}/>} />
+              <Route path="*" element={<NotFoundLayout />} />
+            </Route>
+          </Routes>
+          </ErrorContenxt.Provider>
+        </BrowserRouter>
+      );
+    }
 
 export default App;

@@ -1,12 +1,14 @@
-import { React, useState, useEffect } from 'react';
+import { React, useState, useEffect, useContext } from 'react';
 import { Row, Col, Table, Button, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import API from '../API';
+import ErrorContenxt from '../errorContenxt';
 
 function FrontOfficeLayout(props) {
   const [dirtyPages, setDirtyPages] = useState(false);         //used to update pages
   const [pages, setPages] = useState([]);                      //used to store infos of the pages available to the current 
+  const handleErrors = useContext(ErrorContenxt);
 
   const getPages = async () => {
     try {      

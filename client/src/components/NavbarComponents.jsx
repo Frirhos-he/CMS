@@ -1,16 +1,19 @@
 import React from 'react';
 import { Navbar, Container, Row, Col, Button, Form } from 'react-bootstrap';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { TitleForm } from './TitleForm';
 import API from '../API';
+import ErrorContenxt from '../errorContenxt';
 
 
 function NavHeader(props) {
-  const { loggedin, handleLogout, user, handleErrors, setMessage } = props;
+  const { loggedin, handleLogout, user, setMessage } = props;
   const [title, setTitle] = useState('');                    //used to store the title displayed
   const [dirtTitle, setDirtTitle] = useState(false);         //used make loading on title shown
   const [enabledForm, setEnabledForm] = useState(false);     //used to enable the form title
+  const handleErrors = useContext(ErrorContenxt);
+
 
 
   const handleTitle = async (changedTitle) => {

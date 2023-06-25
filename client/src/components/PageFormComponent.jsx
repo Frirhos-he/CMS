@@ -1,16 +1,18 @@
 import dayjs from 'dayjs';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Form, Button, Table, Row, Col, Spinner} from 'react-bootstrap';
-import { Link, useParams, useNavigate, useLocation} from 'react-router-dom';
+import { Link, useParams, useNavigate} from 'react-router-dom';
 import { ContentForm } from './ContentFormComponent';
 import API from '../API';
-
+import ErrorContenxt from '../errorContenxt';
 
 
 function PageForm(props) {
   const { pageid } = useParams();
   const navigate = useNavigate();
-  const { users, userLogged, handleErrors } = props;
+  const handleErrors = useContext(ErrorContenxt);
+
+  const { users, userLogged } = props;
 
 
   const [images, setImages] = useState([]);                    //used to store images available to show

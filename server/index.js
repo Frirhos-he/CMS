@@ -108,7 +108,8 @@ app.post('/api/sessions', function(req, res, next) {
 
 // GET /api/sessions/current
 // This route checks whether the user is logged in or not.
-app.get('/api/sessions/current', (req, res) => {
+app.get('/api/sessions/current',(req, res) => {
+  console.log("here")
   if (req.isAuthenticated()) {
     res.status(200).json(req.user);
   } else {
@@ -116,7 +117,7 @@ app.get('/api/sessions/current', (req, res) => {
   }
 });
 
-// DELETE /api/session/current
+// DELETE /api/sessions/current
 // This route is used for logging out the current user.
 app.delete('/api/sessions/current', (req, res) => {
   req.logout(() => {
