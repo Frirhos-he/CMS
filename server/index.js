@@ -49,7 +49,7 @@ passport.serializeUser(function(user, callback) { // this user is id + username 
 });
 
 // Starting from the data in the session, we extract the current (logged-in) user.
-passport.deserializeUser(function(user, callback) { // this user is id + email + name 
+passport.deserializeUser(function(user, callback) { // this user is id + email + name + role
   return callback(null, user); // this will be available in req.user
 });
 
